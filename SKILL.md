@@ -63,8 +63,8 @@ and per-tool schemas. Stream the full intake through the tools and complete with
 ## Connect the MCP server
 
 - **Transport:** Streamable HTTP, JSON-RPC 2.0 (MCP protocol `2025-06-18`).
-- **Endpoint:** `https://bfdsyqekvjdexmqycyms.supabase.co/functions/v1/mcp`
-  *(the branded endpoint `mcp.quotor.ai` is being provisioned; this URL is stable in the meantime).*
+- **Endpoint:** `https://mcp.quotor.ai`
+  *(the branded endpoint `mcp.quotor.ai` is live and fronts the Libertas quoting edge function).*
 - **Health check:** `GET {endpoint}/health` → `{ "ok": true, "tool_count": ... }`
 - **Authentication — two tiers:**
   - **Open (no key):** the read-only, no-cost tools work anonymously so you can discover capability

@@ -8,11 +8,11 @@ what you need is in [../SKILL.md](../SKILL.md).
 
 | | |
 |---|---|
-| **URL** | `https://bfdsyqekvjdexmqycyms.supabase.co/functions/v1/mcp` |
+| **URL** | `https://mcp.quotor.ai` |
 | **Transport** | Streamable HTTP, JSON-RPC 2.0 |
 | **MCP protocol** | `2025-06-18` |
 | **Health** | `GET {URL}/health` → `{ "ok": true, "service": "...", "tool_count": N }` |
-| **Branded domain** | `mcp.quotor.ai` (Quotor) is being provisioned; the URL above stays valid until it cuts over. |
+| **Branded domain** | `mcp.quotor.ai` (Quotor) is the live canonical endpoint. |
 
 Standard MCP handshake applies: `initialize` → `tools/list` → `tools/call`.
 
@@ -90,14 +90,14 @@ Authoritative schemas are returned by `tools/list` (each tool's `inputSchema`); 
 
 **List tools (open):**
 ```bash
-curl -s -X POST https://bfdsyqekvjdexmqycyms.supabase.co/functions/v1/mcp \
+curl -s -X POST https://mcp.quotor.ai \
   -H "content-type: application/json" \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
 ```
 
 **Check eligibility (open):**
 ```bash
-curl -s -X POST https://bfdsyqekvjdexmqycyms.supabase.co/functions/v1/mcp \
+curl -s -X POST https://mcp.quotor.ai \
   -H "content-type: application/json" -H "X-MCP-State: TX" \
   -d '{"jsonrpc":"2.0","id":2,"method":"tools/call",
        "params":{"name":"check_eligibility","arguments":{"product":"auto"}}}'
@@ -105,7 +105,7 @@ curl -s -X POST https://bfdsyqekvjdexmqycyms.supabase.co/functions/v1/mcp \
 
 **Start a quote (keyed):**
 ```bash
-curl -s -X POST https://bfdsyqekvjdexmqycyms.supabase.co/functions/v1/mcp \
+curl -s -X POST https://mcp.quotor.ai \
   -H "content-type: application/json" -H "X-MCP-State: TX" \
   -H "Authorization: Bearer $PARTNER_API_KEY" \
   -d '{"jsonrpc":"2.0","id":3,"method":"tools/call",

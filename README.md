@@ -42,8 +42,8 @@ home-auto-insurance-quotes/
 
 ## Connecting to the MCP
 
-- **Endpoint:** `https://bfdsyqekvjdexmqycyms.supabase.co/functions/v1/mcp` (Streamable HTTP,
-  JSON-RPC 2.0). A neutral branded domain is being provisioned.
+- **Endpoint:** `https://mcp.quotor.ai` (Streamable HTTP,
+  JSON-RPC 2.0).
 - **Auth, two tiers:** read-only tools (eligibility, status, option details) work with no key; the
   tools that run the paid rating pipeline or touch personal data require a per-partner API key
   (`Authorization: Bearer <key>`). **End customers never need a key.**
