@@ -49,6 +49,23 @@ home-auto-insurance-quotes/
   (`Authorization: Bearer <key>`). **End customers never need a key.**
 - **Get a partner key (instant, self-serve):** `POST <endpoint>/keys` with `{ "partner_label": "...", "email": "..." }` → returns an `api_key` shown once.
 
+**Add it to your MCP client** (Claude Desktop, Cursor, VS Code, or any Streamable-HTTP MCP client):
+
+```json
+{
+  "mcpServers": {
+    "quotor": {
+      "type": "http",
+      "url": "https://mcp.quotor.ai",
+      "headers": { "Authorization": "Bearer <api_key — mint one at POST https://mcp.quotor.ai/keys>" }
+    }
+  }
+}
+```
+
+The machine-readable manifest is [`server.json`](server.json) (official MCP registry schema) — that's
+what client tooling and directory crawlers read.
+
 See [references/mcp-connection.md](references/mcp-connection.md) for the full handshake.
 
 ## Security & privacy posture

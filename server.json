@@ -1,0 +1,26 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.quotor/home-auto-insurance-quotes",
+  "title": "Quotor — Home & Auto Insurance Quotes",
+  "description": "Get real, bindable home, auto, and bundled insurance quotes (Texas now, expanding) through a remote MCP server. Carrier-masked options; bind is human-completed by a licensed agency via a secure hand-off link.",
+  "version": "0.2.0",
+  "websiteUrl": "https://quotor.ai",
+  "repository": {
+    "url": "https://github.com/quotor/home-auto-insurance-quotes",
+    "source": "github"
+  },
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.quotor.ai",
+      "headers": [
+        {
+          "name": "Authorization",
+          "description": "Bearer <api_key>. Mint a free key with: POST https://mcp.quotor.ai/keys. Only the keyed tools (start_quote, update_quote, get_quote_options, get_bind_link, request_bind_inline, submit_lead, resume_quote) require it; the read-only tools (check_eligibility, check_quote_status, get_option_details, check_late_arrivals) are open.",
+          "isRequired": false,
+          "isSecret": true
+        }
+      ]
+    }
+  ]
+}
