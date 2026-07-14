@@ -18,21 +18,20 @@ Standard MCP handshake applies: `initialize` → `tools/list` → `tools/call`.
 
 ## Authentication
 
-Two tiers. Send the key (when required) as a bearer token:
+**None required.** Every tool works anonymously — no sign-up, no key, no headers. Anonymous traffic
+is rate-limited per IP and per quote session under a hard daily spend ceiling.
+
+**Optional partner key** — for integrations that want their own rate/spend caps and attribution
+instead of the shared anonymous pool, send a bearer token:
 
 ```
 Authorization: Bearer <YOUR_PARTNER_API_KEY>
 ```
 
-| Tier | Tools | Key required |
-|------|-------|--------------|
-| **Open** (read-only, no cost) | `check_eligibility`, `check_quote_status`, `check_late_arrivals`, `get_option_details` | No |
-| **Keyed** (paid rating / personal data) | `start_quote`, `update_quote`, `get_quote_options`, `submit_lead`, `get_bind_link`, `request_bind_inline`, `resume_quote` | Yes |
-
-- Keys are **per-partner**, rate-limited, and spend-capped. Don't share or embed them in client-side
-  code or public repos.
 - **Get a key (instant, self-serve):** `POST {URL}/keys` with `{ "partner_label": "...", "email": "..." }`
   → `{ "api_key": "mcpk_…", "key_prefix": "mcpk_…" }`. The `api_key` is shown **once** — store it.
+- Keys are **per-partner**, rate-limited, and spend-capped. Don't share or embed them in client-side
+  code or public repos.
 - The **end customer never needs a key.**
 
 ## Context headers (not tool arguments)
@@ -48,15 +47,15 @@ The customer's location is provided to the server out-of-band so you don't have 
 ## Call sequence
 
 ```
-check_eligibility            # open — confirm we can quote/bind this state+product
-  └─ start_quote             # keyed — returns { quote_id }
-       └─ update_quote       # keyed — add drivers/vehicles/property facts
-            └─ get_quote_options   # keyed — runs rating, returns options now
-                 ├─ check_quote_status / check_late_arrivals   # open — poll for stragglers
-                 ├─ get_option_details                          # open — drill into one option
-                 └─ request_bind_inline / get_bind_link         # keyed — start the binding
-       └─ submit_lead        # keyed — if the customer drops off, capture for follow-up
-       └─ resume_quote       # keyed — continue an earlier quote_id
+check_eligibility            # confirm we can quote/bind this state+product
+  └─ start_quote             # returns { quote_id }
+       └─ update_quote       # add drivers/vehicles/property facts
+            └─ get_quote_options   # runs rating, returns options now
+                 ├─ check_quote_status / check_late_arrivals   # poll for stragglers
+                 ├─ get_option_details                          # drill into one option
+                 └─ request_bind_inline / get_bind_link         # start the binding
+       └─ submit_lead        # if the customer drops off, capture for follow-up
+       └─ resume_quote       # continue an earlier quote_id
 ```
 
 ## Tool argument summary
@@ -103,21 +102,19 @@ curl -s -X POST https://mcp.quotor.ai \
        "params":{"name":"check_eligibility","arguments":{"product":"auto"}}}'
 ```
 
-**Start a quote (keyed):**
+**Start a quote (no key needed; add `Authorization: Bearer $PARTNER_API_KEY` only if you have an
+optional partner key):**
 ```bash
 curl -s -X POST https://mcp.quotor.ai \
   -H "content-type: application/json" -H "X-MCP-State: TX" \
-  -H "Authorization: Bearer $PARTNER_API_KEY" \
   -d '{"jsonrpc":"2.0","id":3,"method":"tools/call",
        "params":{"name":"start_quote","arguments":{"product":"auto"}}}'
 ```
 
 ## Errors & limits
 
-- **Auth:** missing/invalid key on a keyed tool → JSON-RPC error (auth required). Open tools never
-  require a key.
-- **Rate / spend limits:** per-key. Exceeding them returns a throttling error — back off and retry
-  later; don't hammer.
+- **Rate / spend limits:** per-IP and per-quote for anonymous callers, per-key when a partner key
+  is sent. Exceeding them returns a throttling error — back off and retry later; don't hammer.
 - **Empty results:** rating may return zero options (out of appetite, unsupported state). Don't
   fabricate a quote — offer `submit_lead` so an agent can follow up.
 

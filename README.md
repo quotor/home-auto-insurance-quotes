@@ -31,7 +31,7 @@ home-auto-insurance-quotes/
 ├── SKILL.md                      # the skill itself (agentskills.io spec)
 ├── README.md                     # this file (for humans browsing the repo)
 └── references/
-    └── mcp-connection.md         # endpoint, auth tiers, tool schemas, raw examples
+    └── mcp-connection.md         # endpoint, auth (none required), tool schemas, raw examples
 ```
 
 - **[SKILL.md](SKILL.md)** is what agents load. It documents the two usage pathways, the tool set and
@@ -44,20 +44,23 @@ home-auto-insurance-quotes/
 
 - **Endpoint:** `https://mcp.quotor.ai` (Streamable HTTP,
   JSON-RPC 2.0).
-- **Auth, two tiers:** read-only tools (eligibility, status, option details) work with no key; the
-  tools that run the paid rating pipeline or touch personal data require a per-partner API key
-  (`Authorization: Bearer <key>`). **End customers never need a key.**
-- **Get a partner key (instant, self-serve):** `POST <endpoint>/keys` with `{ "partner_label": "...", "email": "..." }` → returns an `api_key` shown once.
+- **Auth: none required.** All tools work anonymously — connect and quote, no sign-up, no key
+  (anonymous traffic is rate-limited and spend-capped server-side). **End customers never need a
+  key.**
+- **Optional partner key (instant, self-serve):** integrating at volume? `POST <endpoint>/keys`
+  with `{ "partner_label": "...", "email": "..." }` → returns an `api_key` shown once. Send it as
+  `Authorization: Bearer <api_key>` to give your integration its own rate/spend caps and
+  attribution instead of sharing the anonymous pool.
 
-**Add it to your MCP client** (Claude Desktop, Cursor, VS Code, or any Streamable-HTTP MCP client):
+**Add it to your MCP client** (claude.ai custom connectors, Claude Desktop, Cursor, VS Code, or any
+Streamable-HTTP MCP client) — no headers needed:
 
 ```json
 {
   "mcpServers": {
     "quotor": {
       "type": "http",
-      "url": "https://mcp.quotor.ai",
-      "headers": { "Authorization": "Bearer <api_key — mint one at POST https://mcp.quotor.ai/keys>" }
+      "url": "https://mcp.quotor.ai"
     }
   }
 }
@@ -73,7 +76,8 @@ See [references/mcp-connection.md](references/mcp-connection.md) for the full ha
 - **Quote-only scope.** The MCP cannot reach carrier portal credentials, cannot service or cancel
   existing policies, and cannot finalize a bind without a licensed human. A bind request is a routed
   handoff, not an automated purchase.
-- **Per-partner keys**, rate-limited and spend-capped, so no single integrator can run up cost.
+- **Rate- and spend-capped:** anonymous traffic draws per-IP and per-quote budgets under a hard
+  daily spend ceiling; optional partner keys carry their own caps — no single caller can run up cost.
 - **Every call logged**; anomalous usage (auth-failure spikes, off-hours surges) is monitored.
 - **Customer data is protected:** quotes create prospect records and never overwrite existing
   customers; a returning customer's current premium is only ever returned to an authenticated
@@ -81,9 +85,9 @@ See [references/mcp-connection.md](references/mcp-connection.md) for the full ha
 
 ## Status
 
-Live. The MCP is deployed and enforced in production — per-partner API keys, rate and spend caps, and
-full audit logging are in force. Coverage is Texas today (home, auto, bundles; other lines via lead
-capture), expanding nationally; always call `check_eligibility` first.
+Live. The MCP is deployed in production — rate and spend caps and full audit logging are in force;
+API keys are optional (partner attribution + dedicated caps). Coverage is Texas today (home, auto,
+bundles; other lines via lead capture), expanding nationally; always call `check_eligibility` first.
 
 ## License
 

@@ -3,7 +3,7 @@
   "name": "io.github.quotor/home-auto-insurance-quotes",
   "title": "Quotor — Home & Auto Insurance Quotes",
   "description": "Real, bindable home & auto insurance quotes via MCP (Texas, expanding); human-completed bind.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "websiteUrl": "https://quotor.ai",
   "repository": {
     "url": "https://github.com/quotor/home-auto-insurance-quotes",
@@ -16,7 +16,7 @@
       "headers": [
         {
           "name": "Authorization",
-          "description": "Bearer <api_key>. Mint a free key with: POST https://mcp.quotor.ai/keys. Only the keyed tools (start_quote, update_quote, get_quote_options, get_bind_link, request_bind_inline, submit_lead, resume_quote) require it; the read-only tools (check_eligibility, check_quote_status, get_option_details, check_late_arrivals) are open.",
+          "description": "OPTIONAL — no key is required; every tool works anonymously (rate- and spend-capped). Partner integrations wanting dedicated caps + attribution can mint a free key (POST https://mcp.quotor.ai/keys) and send it as: Bearer <api_key>.",
           "isRequired": false,
           "isSecret": true
         }

@@ -66,22 +66,20 @@ and per-tool schemas. Stream the full intake through the tools and complete with
 - **Endpoint:** `https://mcp.quotor.ai`
   *(the branded endpoint `mcp.quotor.ai` is live and fronts the Libertas quoting edge function).*
 - **Health check:** `GET {endpoint}/health` → `{ "ok": true, "tool_count": ... }`
-- **Authentication — two tiers:**
-  - **Open (no key):** the read-only, no-cost tools work anonymously so you can discover capability
-    and check status with zero friction: `check_eligibility`, `check_quote_status`,
-    `get_option_details`, `check_late_arrivals`.
-  - **Keyed (API key required):** the tools that run the paid rating pipeline or touch personal
-    data require a per-partner API key, sent as `Authorization: Bearer <API_KEY>`:
-    `start_quote`, `update_quote`, `get_quote_options`, `submit_lead`, `get_bind_link`,
-    `request_bind_inline`, `resume_quote`.
-  - **Getting a key (instant, self-serve):** `POST {endpoint}/keys` with a JSON body
-    `{ "partner_label": "Your App Name", "email": "you@example.com" }` → returns an `api_key`
-    **shown once** (store it). Keys are per-partner, rate-limited, and spend-capped. **The end
-    customer never needs a key** — only you, the integrating agent/partner, do.
-- **Location context (don't ask the customer for it):** the customer's state (and optionally ZIP) is
-  supplied to the server out-of-band via request headers (`X-MCP-State`, `X-MCP-Zip`) from the
-  platform's location flow. Send them as headers when you have them; do **not** pass state as a tool
-  argument.
+- **Authentication — none required:**
+  - **Every tool works anonymously** — connect and run the full quote-to-bind flow with zero
+    friction, no sign-up, no key. Anonymous traffic is rate-limited and spend-capped server-side.
+    **The end customer never needs a key.**
+  - **Optional partner key (instant, self-serve):** integrating at volume? `POST {endpoint}/keys`
+    with a JSON body `{ "partner_label": "Your App Name", "email": "you@example.com" }` → returns
+    an `api_key` **shown once** (store it). Send it as `Authorization: Bearer <API_KEY>` to get
+    your own rate/spend caps and attribution instead of sharing the anonymous pool.
+- **Location context:** if your platform can set request headers, send the customer's state (and
+  optionally ZIP) via `X-MCP-State` / `X-MCP-Zip` — do **not** pass state as a tool argument. On
+  platforms that can't set headers (e.g. claude.ai connectors), `check_eligibility` returns the
+  licensed-states list with `next_step: "collect_state_first"` — ask the customer their state
+  conversationally, compare against that list, and proceed; the state then rides in on the
+  property/garaging address during intake.
 
 Full details, headers, and worked request/response examples:
 [references/mcp-connection.md](references/mcp-connection.md).
@@ -90,19 +88,19 @@ Full details, headers, and worked request/response examples:
 
 ## The tools (and the order to call them)
 
-| # | Tool | Tier | What it does |
-|---|------|------|--------------|
-| 1 | `check_eligibility` | open | First call. Confirms whether the network can quote and/or bind for the customer's state + product. |
-| 2 | `start_quote` | keyed | Opens a new home/auto/bundle quote. Returns a `quote_id` used on every later call. |
-| 3 | `update_quote` | keyed | Adds or corrects intake details on the open `quote_id`. |
-| 4 | `get_quote_options` | keyed | Runs rating and returns the quote options. Non-blocking — returns what's ready immediately. |
-| 5 | `check_quote_status` | open | Poll the `quote_id` for status and any newly-arrived carrier rates. |
-| 6 | `check_late_arrivals` | open | Convenience poll specifically for carriers that returned after the first response. |
-| 7 | `get_option_details` | open | Detail (coverages, price) on a specific option the customer is considering. |
-| 8 | `get_bind_link` | keyed | Mints a secure, single-use link for the customer to complete the binding with a licensed agent. |
-| 9 | `request_bind_inline` | keyed | Starts the binding from inside the conversation: files the bind request and routes it to the matched agency. |
-| 10 | `submit_lead` | keyed | Capture contact info if the customer isn't ready to finish, so an agent can follow up. |
-| 11 | `resume_quote` | keyed | Resume a previously-started `quote_id` (returning shopper / continued session). |
+| # | Tool | What it does |
+|---|------|--------------|
+| 1 | `check_eligibility` | First call. Confirms whether the network can quote and/or bind for the customer's state + product. |
+| 2 | `start_quote` | Opens a new home/auto/bundle quote. Returns a `quote_id` used on every later call. |
+| 3 | `update_quote` | Adds or corrects intake details on the open `quote_id`. |
+| 4 | `get_quote_options` | Runs rating and returns the quote options. Non-blocking — returns what's ready immediately. |
+| 5 | `check_quote_status` | Poll the `quote_id` for status and any newly-arrived carrier rates. |
+| 6 | `check_late_arrivals` | Convenience poll specifically for carriers that returned after the first response. |
+| 7 | `get_option_details` | Detail (coverages, price) on a specific option the customer is considering. |
+| 8 | `get_bind_link` | Mints a secure, single-use link for the customer to complete the binding with a licensed agent. |
+| 9 | `request_bind_inline` | Starts the binding from inside the conversation: files the bind request and routes it to the matched agency. |
+| 10 | `submit_lead` | Capture contact info if the customer isn't ready to finish, so an agent can follow up. |
+| 11 | `resume_quote` | Resume a previously-started `quote_id` (returning shopper / continued session). |
 
 **Binding is human-completed.** `request_bind_inline` and `get_bind_link` do **not** silently buy a
 policy. They file a routed bind request and hand the customer a secure link; a **licensed agent at
@@ -174,7 +172,7 @@ currently-licensed states (call `check_eligibility`).
 
 ## Privacy & safety
 
-- The end customer never needs an API key.
+- No API key is required for anything; optional partner keys exist for attribution and dedicated caps.
 - Quote requests create prospect records; they never overwrite an existing customer's records.
 - Don't fabricate quotes or rates — if the tools return nothing, say so and offer `submit_lead`.
 - Don't ask customers to upload personal documents.
