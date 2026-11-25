@@ -15,8 +15,8 @@ can pull in to quote and help bind home, auto, and bundled insurance. The skill 
 
 ## What it does
 
-- **Real quotes, not estimates.** Returns live multi-carrier rates for the customer's state and
-  product.
+- **Preliminary ranges and verified rates.** Early options can be estimates while carriers are
+  still verifying pricing. Treat only a verified price for the selected option as confirmed.
 - **Two integration styles:**
   - *Conversational* — an assistant does a quick intake in chat and reads back quotes.
   - *Agentic* — a system connects the MCP server directly and runs the full quote-to-bind flow.

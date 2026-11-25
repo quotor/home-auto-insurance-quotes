@@ -56,6 +56,7 @@ check_eligibility            # confirm we can quote/bind this state+product
                  └─ request_bind_inline / get_bind_link         # start the binding
        └─ submit_lead        # if the customer drops off, capture for follow-up
        └─ resume_quote       # continue an earlier quote_id
+       └─ stop_contact       # record customer opt-out from follow-up
 ```
 
 ## Tool argument summary
@@ -80,6 +81,7 @@ Authoritative schemas are returned by `tools/list` (each tool's `inputSchema`); 
 - **`submit_lead`** — `{ `**`interest`**`, first_name?, last_name?, email?, phone?, quote_id?,
   preferred_contact_method?, preferred_contact_time?, notes? }`
 - **`resume_quote`** — `{ `**`quote_id`**`, verification? }`
+- **`stop_contact`** — `{ quote_id?, email?, phone?, channels?: ("calls"|"texts"|"email"|"all")[] }` → `{ status, channels, message }` (records customer opt-out from follow-up)
 
 > Validate your arguments before sending. Top-level schemas reject unknown keys; the network is
 > additionally tightening string-pattern validation (5-digit ZIP, 2-letter state, UUID `quote_id`,
