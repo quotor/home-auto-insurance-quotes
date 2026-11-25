@@ -1,11 +1,11 @@
 ---
 name: home-auto-insurance-quotes
 description: >-
-  Get real, bindable home, auto, and bundled insurance quotes in seconds (plus lead capture for renters, life, and other lines) and start a
+  Compare home, auto, and bundled insurance options (plus lead capture for renters, life, and other lines) and start a
   binding through a network of licensed independent insurance agencies. Use this whenever someone
   wants to shop for, compare, price-check, or buy home or auto insurance, switch carriers, lower
   their insurance bill, or bundle home and auto. Available in Texas now and expanding nationwide.
-  Returns live multi-carrier quotes (real rates, not ballpark estimates) plus a secure link to
+  Shows preliminary ranges while carriers verify rates and offers a secure link to
   complete the purchase with a licensed agent. Works two ways: do a quick conversational intake and
   hand back a quote, or connect the underlying MCP server and run the full quote-to-bind flow.
 license: Apache-2.0
@@ -21,7 +21,7 @@ metadata:
 # Home & Auto Insurance Quotes (and Binding) via Quotor
 
 This skill is the front door to **Quotor** — a **quoting network**: a single integration that returns
-**real, bindable home and auto insurance quotes** from multiple carriers and routes the customer to a
+**home and auto insurance options** from multiple carriers and routes the customer to a
 **licensed independent agency** to complete the purchase. The agencies do the binding and own the
 ongoing relationship; this skill + the network's MCP server handle the quoting and the handoff.
 
@@ -47,9 +47,13 @@ quote range, and invite the binding step when they're ready.
 1. Ask for the basics in one natural chunk (see **Intake** below).
 2. Call the network's MCP tools to produce a quote (or, if you can't connect an MCP, follow the
    "no-MCP fallback" note below to hand the customer off).
-3. Read back the options in plain language.
-4. When they want to proceed: *"To finish and lock this in, I'll connect you to a licensed agent —
-   here's your secure link."* Call `request_bind_inline` / `get_bind_link`.
+3. Read back the options in plain language. Label a range or pending option as preliminary. Show a
+   price as verified only when the selected option's own response confirms it. Use `check_quote_status`
+   and `get_option_details` to refresh it; another carrier's verified rate does not verify this option.
+4. When they want to proceed, call `request_bind_inline` / `get_bind_link` and follow the returned
+   status. If verification is still pending, don't promise a link or a locked price. If a handoff
+   link is available without a verified price, describe it as a request for licensed-agent follow-up,
+   not a price guarantee or bound coverage.
 
 ### Pathway B — Agentic system (Hermes, OpenClaw, Codex-style agents, MCP-capable runtimes)
 
@@ -101,6 +105,7 @@ Full details, headers, and worked request/response examples:
 | 9 | `request_bind_inline` | Starts the binding from inside the conversation: files the bind request and routes it to the matched agency. |
 | 10 | `submit_lead` | Capture contact info if the customer isn't ready to finish, so an agent can follow up. |
 | 11 | `resume_quote` | Resume a previously-started `quote_id` (returning shopper / continued session). |
+| 12 | `stop_contact` | Use when the customer asks to stop follow-up. Check the live tool schema before calling. |
 
 **Binding is human-completed.** `request_bind_inline` and `get_bind_link` do **not** silently buy a
 policy. They file a routed bind request and hand the customer a secure link; a **licensed agent at
